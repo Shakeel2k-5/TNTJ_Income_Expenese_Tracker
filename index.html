@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNTJ Sangunagar Markas - Monthly Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-emerald-700 text-white py-6 shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h1 class="text-3xl font-bold mb-1">TNTJ SANGUNAGAR MARKAS</h1>
+            <p class="text-lg mb-4 opacity-90">Monthly Report Generator</p>
+            <div>
+                <label class="block text-sm mb-1">Report Month</label>
+                <input type="month" id="reportMonth"
+                    class="text-lg px-4 py-2 rounded text-gray-800 w-56 text-center" />
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 space-y-10">
+
+        <!-- Income Section -->
+        <section class="bg-white rounded-xl shadow p-6">
+            <h2 class="text-2xl font-bold text-emerald-700 mb-4 border-b pb-2">Income Entry</h2>
+            <div id="incomeForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Date</label>
+                    <input type="date" id="incDate" class="w-full border rounded px-3 py-2 text-lg inc-field" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Receipt Book Number</label>
+                    <input type="text" id="incBookNo" placeholder="Book No" class="w-full border rounded px-3 py-2 text-lg inc-field" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Receipt Number</label>
+                    <input type="text" id="incReceiptNo" placeholder="Receipt No" class="w-full border rounded px-3 py-2 text-lg inc-field" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Type of Income</label>
+                    <select id="incType" class="w-full border rounded px-3 py-2 text-lg inc-field">
+                        <option value="">-- Select --</option>
+                        <option>Sandha</option>
+                        <option>Maruthuva Udhavi</option>
+                        <option>Kanji Vasool</option>
+                        <option>Jumma Vasool</option>
+                        <option>Zakath</option>
+                        <option>Others</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Name</label>
+                    <input type="text" id="incName" placeholder="Donor Name" class="w-full border rounded px-3 py-2 text-lg inc-field" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Amount</label>
+                    <input type="number" id="incAmount" placeholder="0.00" min="0" step="0.01" class="w-full border rounded px-3 py-2 text-lg inc-field" />
+                </div>
+            </div>
+            <button onclick="addIncome()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition">
+                + Add Income
+            </button>
+
+            <!-- Income Table -->
+            <div class="mt-6 overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="incomeTable">
+                    <thead>
+                        <tr class="bg-emerald-50">
+                            <th class="border px-3 py-2">S.No</th>
+                            <th class="border px-3 py-2">Date</th>
+                            <th class="border px-3 py-2">Book No</th>
+                            <th class="border px-3 py-2">Receipt No</th>
+                            <th class="border px-3 py-2">Type</th>
+                            <th class="border px-3 py-2">Name</th>
+                            <th class="border px-3 py-2 text-right">Amount</th>
+                            <th class="border px-3 py-2 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="incomeBody"></tbody>
+                </table>
+                <div class="text-right mt-2">
+                    <span class="text-lg font-bold text-emerald-700">Total Income: <span id="totalIncome">0.00</span></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Expense Section -->
+        <section class="bg-white rounded-xl shadow p-6">
+            <h2 class="text-2xl font-bold text-red-600 mb-4 border-b pb-2">Expense Entry</h2>
+            <div id="expenseForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Date</label>
+                    <input type="date" id="expDate" class="w-full border rounded px-3 py-2 text-lg exp-field" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Voucher Book Number</label>
+                    <input type="text" id="expBookNo" placeholder="Book No" class="w-full border rounded px-3 py-2 text-lg exp-field" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Voucher Number</label>
+                    <input type="text" id="expVoucherNo" placeholder="Voucher No" class="w-full border rounded px-3 py-2 text-lg exp-field" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Type of Expense</label>
+                    <select id="expType" class="w-full border rounded px-3 py-2 text-lg exp-field">
+                        <option value="">-- Select --</option>
+                        <option>Rent</option>
+                        <option>E.B Bill</option>
+                        <option>Salary</option>
+                        <option>Groceries</option>
+                        <option>Daily Expense</option>
+                        <option>Hiring Vehicles</option>
+                        <option>Mosque Maintainance</option>
+                        <option>Others</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Amount</label>
+                    <input type="number" id="expAmount" placeholder="0.00" min="0" step="0.01" class="w-full border rounded px-3 py-2 text-lg exp-field" />
+                </div>
+            </div>
+            <button onclick="addExpense()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-lg text-lg transition">
+                + Add Expense
+            </button>
+
+            <!-- Expense Table -->
+            <div class="mt-6 overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="expenseTable">
+                    <thead>
+                        <tr class="bg-red-50">
+                            <th class="border px-3 py-2">S.No</th>
+                            <th class="border px-3 py-2">Date</th>
+                            <th class="border px-3 py-2">Book No</th>
+                            <th class="border px-3 py-2">Voucher No</th>
+                            <th class="border px-3 py-2">Type</th>
+                            <th class="border px-3 py-2 text-right">Amount</th>
+                            <th class="border px-3 py-2 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenseBody"></tbody>
+                </table>
+                <div class="text-right mt-2">
+                    <span class="text-lg font-bold text-red-600">Total Expense: <span id="totalExpense">0.00</span></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary Section -->
+        <section class="bg-white rounded-xl shadow p-6">
+            <h2 class="text-2xl font-bold text-gray-700 mb-6 border-b pb-2">Monthly Summary</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Income Breakdown -->
+                <div class="bg-emerald-50 rounded-lg p-5">
+                    <h3 class="text-lg font-bold text-emerald-700 mb-3 border-b border-emerald-200 pb-2">Income Breakdown</h3>
+                    <div id="incomeBreakdown" class="space-y-2 text-gray-700">
+                        <p class="text-sm text-gray-400 italic">No income entries yet</p>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-emerald-200 flex justify-between font-bold text-emerald-700 text-lg">
+                        <span>Total Income</span>
+                        <span id="summaryIncome">0.00</span>
+                    </div>
+                </div>
+
+                <!-- Expense Breakdown -->
+                <div class="bg-red-50 rounded-lg p-5">
+                    <h3 class="text-lg font-bold text-red-600 mb-3 border-b border-red-200 pb-2">Expense Breakdown</h3>
+                    <div id="expenseBreakdown" class="space-y-2 text-gray-700">
+                        <p class="text-sm text-gray-400 italic">No expense entries yet</p>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-red-200 flex justify-between font-bold text-red-600 text-lg">
+                        <span>Total Expense</span>
+                        <span id="summaryExpense">0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Net Balance -->
+            <div class="bg-blue-50 rounded-lg p-6 text-center">
+                <p class="text-sm text-gray-500 mb-1">Net Balance (Income - Expense)</p>
+                <p class="text-4xl font-bold text-blue-700" id="summaryBalance">0.00</p>
+            </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <section class="flex flex-col sm:flex-row justify-center items-center gap-4 pb-10">
+            <button onclick="generateExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-10 rounded-lg text-xl transition shadow">
+                Generate Excel
+            </button>
+            <button onclick="clearData()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition shadow">
+                Clear Data
+            </button>
+        </section>
+
+    </main>
+
+    <footer class="text-center text-gray-400 text-sm py-4">
+        TNTJ Sangunagar Markas - Monthly Report Generator
+    </footer>
+
+    <script>
+        // ---------- State ----------
+        var incomeEntries = [];
+        var expenseEntries = [];
+        var MOSQUE_NAME = 'TNTJ SANGUNAGAR MARKAS';
+
+        // Set default month to current
+        document.getElementById('reportMonth').value =
+            new Date().toISOString().slice(0, 7);
+
+        // ---------- Date formatting helper ----------
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            var parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            return parts[2] + '/' + parts[1] + '/' + parts[0];
+        }
+
+        // ---------- Auto-increment helper ----------
+        function autoIncrementField(fieldId) {
+            var field = document.getElementById(fieldId);
+            var val = field.value.trim();
+            if (!val) return;
+            var match = val.match(/^(.*?)(\d+)$/);
+            if (match) {
+                var prefix = match[1];
+                var num = parseInt(match[2], 10) + 1;
+                var padded = String(num).padStart(match[2].length, '0');
+                field.value = prefix + padded;
+            }
+        }
+
+        // ---------- Enter key support ----------
+        document.querySelectorAll('.inc-field').forEach(function(el) {
+            el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addIncome();
+                }
+            });
+        });
+
+        document.querySelectorAll('.exp-field').forEach(function(el) {
+            el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addExpense();
+                }
+            });
+        });
+
+        // ---------- Income ----------
+        function addIncome() {
+            var date = document.getElementById('incDate').value;
+            var bookNo = document.getElementById('incBookNo').value.trim();
+            var receiptNo = document.getElementById('incReceiptNo').value.trim();
+            var type = document.getElementById('incType').value;
+            var name = document.getElementById('incName').value.trim();
+            var amount = parseFloat(document.getElementById('incAmount').value);
+
+            if (!date || !type || !name || isNaN(amount) || amount <= 0) {
+                alert('Please fill in all required fields (Date, Type, Name, Amount).');
+                return;
+            }
+
+            incomeEntries.push({ date: date, bookNo: bookNo, receiptNo: receiptNo, type: type, name: name, amount: amount });
+            clearIncomeForm();
+            renderIncome();
+        }
+
+        function clearIncomeForm() {
+            document.getElementById('incName').value = '';
+            document.getElementById('incAmount').value = '';
+            autoIncrementField('incReceiptNo');
+            document.getElementById('incName').focus();
+        }
+
+        function editIncome(index) {
+            var e = incomeEntries[index];
+            document.getElementById('incDate').value = e.date;
+            document.getElementById('incBookNo').value = e.bookNo;
+            document.getElementById('incReceiptNo').value = e.receiptNo;
+            document.getElementById('incType').value = e.type;
+            document.getElementById('incName').value = e.name;
+            document.getElementById('incAmount').value = e.amount;
+            incomeEntries.splice(index, 1);
+            renderIncome();
+        }
+
+        function deleteIncome(index) {
+            if (confirm('Are you sure you want to delete this income entry?')) {
+                incomeEntries.splice(index, 1);
+                renderIncome();
+            }
+        }
+
+        function renderIncome() {
+            var tbody = document.getElementById('incomeBody');
+            tbody.innerHTML = '';
+            var total = 0;
+            incomeEntries.forEach(function(e, i) {
+                total += e.amount;
+                tbody.innerHTML += '<tr class="hover:bg-gray-50">' +
+                    '<td class="border px-3 py-2">' + (i + 1) + '</td>' +
+                    '<td class="border px-3 py-2">' + formatDate(e.date) + '</td>' +
+                    '<td class="border px-3 py-2">' + e.bookNo + '</td>' +
+                    '<td class="border px-3 py-2">' + e.receiptNo + '</td>' +
+                    '<td class="border px-3 py-2">' + e.type + '</td>' +
+                    '<td class="border px-3 py-2">' + e.name + '</td>' +
+                    '<td class="border px-3 py-2 text-right">' + e.amount.toFixed(2) + '</td>' +
+                    '<td class="border px-3 py-2 text-center">' +
+                        '<button onclick="editIncome(' + i + ')" class="text-blue-600 hover:underline mr-2">Edit</button>' +
+                        '<button onclick="deleteIncome(' + i + ')" class="text-red-600 hover:underline">Delete</button>' +
+                    '</td>' +
+                '</tr>';
+            });
+            document.getElementById('totalIncome').textContent = total.toFixed(2);
+            updateSummary();
+        }
+
+        // ---------- Expense ----------
+        function addExpense() {
+            var date = document.getElementById('expDate').value;
+            var bookNo = document.getElementById('expBookNo').value.trim();
+            var voucherNo = document.getElementById('expVoucherNo').value.trim();
+            var type = document.getElementById('expType').value;
+            var amount = parseFloat(document.getElementById('expAmount').value);
+
+            if (!date || !type || isNaN(amount) || amount <= 0) {
+                alert('Please fill in all required fields (Date, Type, Amount).');
+                return;
+            }
+
+            expenseEntries.push({ date: date, bookNo: bookNo, voucherNo: voucherNo, type: type, amount: amount });
+            clearExpenseForm();
+            renderExpense();
+        }
+
+        function clearExpenseForm() {
+            document.getElementById('expAmount').value = '';
+            autoIncrementField('expVoucherNo');
+            document.getElementById('expAmount').focus();
+        }
+
+        function editExpense(index) {
+            var e = expenseEntries[index];
+            document.getElementById('expDate').value = e.date;
+            document.getElementById('expBookNo').value = e.bookNo;
+            document.getElementById('expVoucherNo').value = e.voucherNo;
+            document.getElementById('expType').value = e.type;
+            document.getElementById('expAmount').value = e.amount;
+            expenseEntries.splice(index, 1);
+            renderExpense();
+        }
+
+        function deleteExpense(index) {
+            if (confirm('Are you sure you want to delete this expense entry?')) {
+                expenseEntries.splice(index, 1);
+                renderExpense();
+            }
+        }
+
+        function renderExpense() {
+            var tbody = document.getElementById('expenseBody');
+            tbody.innerHTML = '';
+            var total = 0;
+            expenseEntries.forEach(function(e, i) {
+                total += e.amount;
+                tbody.innerHTML += '<tr class="hover:bg-gray-50">' +
+                    '<td class="border px-3 py-2">' + (i + 1) + '</td>' +
+                    '<td class="border px-3 py-2">' + formatDate(e.date) + '</td>' +
+                    '<td class="border px-3 py-2">' + e.bookNo + '</td>' +
+                    '<td class="border px-3 py-2">' + e.voucherNo + '</td>' +
+                    '<td class="border px-3 py-2">' + e.type + '</td>' +
+                    '<td class="border px-3 py-2 text-right">' + e.amount.toFixed(2) + '</td>' +
+                    '<td class="border px-3 py-2 text-center">' +
+                        '<button onclick="editExpense(' + i + ')" class="text-blue-600 hover:underline mr-2">Edit</button>' +
+                        '<button onclick="deleteExpense(' + i + ')" class="text-red-600 hover:underline">Delete</button>' +
+                    '</td>' +
+                '</tr>';
+            });
+            document.getElementById('totalExpense').textContent = total.toFixed(2);
+            updateSummary();
+        }
+
+        // ---------- Summary with type-wise breakdown ----------
+        function groupByType(entries) {
+            var groups = {};
+            entries.forEach(function(e) {
+                if (!groups[e.type]) groups[e.type] = 0;
+                groups[e.type] += e.amount;
+            });
+            return groups;
+        }
+
+        function updateSummary() {
+            var totalInc = incomeEntries.reduce(function(s, e) { return s + e.amount; }, 0);
+            var totalExp = expenseEntries.reduce(function(s, e) { return s + e.amount; }, 0);
+            var balance = totalInc - totalExp;
+
+            // Income breakdown by type
+            var incBreakdown = document.getElementById('incomeBreakdown');
+            var incGroups = groupByType(incomeEntries);
+            var incKeys = Object.keys(incGroups);
+            if (incKeys.length === 0) {
+                incBreakdown.innerHTML = '<p class="text-sm text-gray-400 italic">No income entries yet</p>';
+            } else {
+                var html = '';
+                incKeys.forEach(function(type) {
+                    html += '<div class="flex justify-between">' +
+                        '<span>' + type + '</span>' +
+                        '<span class="font-semibold">' + incGroups[type].toFixed(2) + '</span>' +
+                    '</div>';
+                });
+                incBreakdown.innerHTML = html;
+            }
+
+            // Expense breakdown by type
+            var expBreakdown = document.getElementById('expenseBreakdown');
+            var expGroups = groupByType(expenseEntries);
+            var expKeys = Object.keys(expGroups);
+            if (expKeys.length === 0) {
+                expBreakdown.innerHTML = '<p class="text-sm text-gray-400 italic">No expense entries yet</p>';
+            } else {
+                var html2 = '';
+                expKeys.forEach(function(type) {
+                    html2 += '<div class="flex justify-between">' +
+                        '<span>' + type + '</span>' +
+                        '<span class="font-semibold">' + expGroups[type].toFixed(2) + '</span>' +
+                    '</div>';
+                });
+                expBreakdown.innerHTML = html2;
+            }
+
+            document.getElementById('summaryIncome').textContent = totalInc.toFixed(2);
+            document.getElementById('summaryExpense').textContent = totalExp.toFixed(2);
+            document.getElementById('summaryBalance').textContent = balance.toFixed(2);
+            document.getElementById('summaryBalance').className =
+                'text-4xl font-bold ' + (balance >= 0 ? 'text-blue-700' : 'text-red-700');
+        }
+
+        // ---------- Clear Data ----------
+        function clearData() {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+                incomeEntries = [];
+                expenseEntries = [];
+                renderIncome();
+                renderExpense();
+            }
+        }
+
+        // ---------- Excel Generation ----------
+        function generateExcel() {
+            var reportMonth = document.getElementById('reportMonth').value || '';
+
+            var totalInc = incomeEntries.reduce(function(s, e) { return s + e.amount; }, 0);
+            var totalExp = expenseEntries.reduce(function(s, e) { return s + e.amount; }, 0);
+            var balance = totalInc - totalExp;
+
+            var wb = XLSX.utils.book_new();
+
+            // Sheet 1: Income
+            var incData = [['S.No', 'Date', 'Receipt Book No', 'Receipt No', 'Type', 'Name', 'Amount']];
+            incomeEntries.forEach(function(e, i) {
+                incData.push([i + 1, formatDate(e.date), e.bookNo, e.receiptNo, e.type, e.name, e.amount]);
+            });
+            incData.push(['', '', '', '', '', 'Total', totalInc]);
+            var ws1 = XLSX.utils.aoa_to_sheet(incData);
+            XLSX.utils.book_append_sheet(wb, ws1, 'Income');
+
+            // Sheet 2: Expense
+            var expData = [['S.No', 'Date', 'Voucher Book No', 'Voucher No', 'Type', 'Amount']];
+            expenseEntries.forEach(function(e, i) {
+                expData.push([i + 1, formatDate(e.date), e.bookNo, e.voucherNo, e.type, e.amount]);
+            });
+            expData.push(['', '', '', '', 'Total', totalExp]);
+            var ws2 = XLSX.utils.aoa_to_sheet(expData);
+            XLSX.utils.book_append_sheet(wb, ws2, 'Expense');
+
+            // Sheet 3: Summary with type-wise breakdown
+            var sumData = [
+                ['TNTJ SANGUNAGAR MARKAS'],
+                ['Monthly Financial Report'],
+                ['Report Month', reportMonth],
+                [''],
+                ['--- Income Breakdown ---'],
+            ];
+            var incGroups = groupByType(incomeEntries);
+            Object.keys(incGroups).forEach(function(type) {
+                sumData.push([type, incGroups[type]]);
+            });
+            sumData.push(['Total Income', totalInc]);
+            sumData.push(['']);
+            sumData.push(['--- Expense Breakdown ---']);
+            var expGroups = groupByType(expenseEntries);
+            Object.keys(expGroups).forEach(function(type) {
+                sumData.push([type, expGroups[type]]);
+            });
+            sumData.push(['Total Expense', totalExp]);
+            sumData.push(['']);
+            sumData.push(['Net Balance', balance]);
+
+            var ws3 = XLSX.utils.aoa_to_sheet(sumData);
+            XLSX.utils.book_append_sheet(wb, ws3, 'Summary');
+
+            var fileName = 'TNTJ_Sangunagar_Markas_Report_' + (reportMonth || 'report') + '.xlsx';
+            XLSX.writeFile(wb, fileName);
+        }
+    </script>
+
+</body>
+</html>
